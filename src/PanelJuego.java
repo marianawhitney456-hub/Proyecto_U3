@@ -1,4 +1,3 @@
-
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.*;
@@ -13,11 +12,24 @@ public class PanelJuego extends JPanel implements ActionListener, KeyListener {
     private int puntuacion = 0;
     private boolean juegoTerminado = false;
 
+    // Imagen para el agua
+    private Image spriteAgua;
+
     public PanelJuego() {
-        setPreferredSize(new Dimension(800, 400));
-        setBackground(new Color(135, 206, 235));
-        setFocusable(true);
-        addKeyListener(this);
+        this.setPreferredSize(new Dimension(800, 400));
+
+        // color de fondo para el cielo
+        this.setBackground(new Color(135, 206, 235));
+        this.setFocusable(true);
+        this.addKeyListener(this);
+
+        // Cargam la imagen del agua
+        try {
+            spriteAgua = new ImageIcon(getClass().getResource("/Sprites/agua.png")).getImage();
+        } catch (Exception e) {
+            System.out.println("No se pudo cargar agua.png");
+            spriteAgua = null;
+        }
 
         rana = new Rana();
         obstaculos = new ArrayList<>();
@@ -30,9 +42,17 @@ public class PanelJuego extends JPanel implements ActionListener, KeyListener {
     protected void paintComponent(Graphics g) {
         super.paintComponent(g);
 
-        // Dibujar Agua
-        g.setColor(new Color(30, 144, 255));
-        g.fillRect(0, 330, 800, 70);
+
+        if (spriteAgua != null) {
+
+            // La imagen de 70 pixe de alto.
+            for (int x = 0; x < getWidth(); x += 70) { // Asumimos que agua.png mide ~70px de ancho
+                g.drawImage(spriteAgua, x, 330, 70, 70, null);
+            }
+        } else {
+            g.setColor(new Color(30, 144, 255));
+            g.fillRect(0, 330, 800, 70);
+        }
 
         rana.dibujar(g);
 
@@ -40,7 +60,7 @@ public class PanelJuego extends JPanel implements ActionListener, KeyListener {
             o.dibujar(g);
         }
 
-        // UI
+
         g.setColor(Color.BLACK);
         g.setFont(new Font("Arial", Font.BOLD, 18));
         g.drawString("Puntos: " + puntuacion, 20, 30);
@@ -57,14 +77,13 @@ public class PanelJuego extends JPanel implements ActionListener, KeyListener {
         if (!juegoTerminado) {
             rana.actualizar();
 
-            // Generar obstáculos
             if (random.nextInt(100) < 3) {
                 if (obstaculos.isEmpty() || obstaculos.get(obstaculos.size() - 1).getBounds().x < 600) {
-                    obstaculos.add(new Obstaculo(800, 320));
+                    // Aparecen en la línea del agua
+                    obstaculos.add(new Obstaculo(800, 330));
                 }
             }
 
-            // Manejar obstáculos
             for (int i = 0; i < obstaculos.size(); i++) {
                 Obstaculo o = obstaculos.get(i);
                 o.mover();
